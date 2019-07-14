@@ -1,0 +1,94 @@
+version: '3'
+services: 
+    gateway: 
+        image: micro/gateway
+        command: python app/app.py
+        container_name: gateway
+        ports:
+            - "5001:5000"
+    redis:
+        image: redis
+    redis_slave1:
+        image: redis
+        command: redis-server --slaveof redis 6379
+    redis_slave2:
+        image: redis
+        command: redis-server --slaveof redis 6379
+
+
+    # 添加neginx
+    nginx01:  #服务名称
+        image: nginx:latest #镜像
+        container_name: nginx01 #容器名称
+        ports:  #映射端口号，前者宿主机端口，后者容器端口
+            - 8080:80
+        volumes: #映射的目录或文件，前者宿主机目录，后者容器目录
+            - ./docker/nginx/nginx01/nginx.conf:/etc/nginx/nginx.conf #配置文件
+            - ./docker/nginx/nginx01/conf.d:/etc/nginx/conf.d #扩展配置目录
+            - ./front-end/dist:/usr/share/nginx/html #html存放目录
+
+    nginx02:
+        image: nginx:latest
+        container_name: nginx02
+        volumes:
+            - ./docker/nginx/nginx02/nginx.conf:/etc/nginx/nginx.conf
+            - ./docker/nginx/nginx02/conf.d:/etc/nginx/conf.d
+            - ./front-end/dist:/usr/share/nginx/html
+
+    nginx03:
+        image: nginx:latest
+        container_name: nginx03
+        volumes:
+            - ./docker/nginx/nginx03/nginx.conf:/etc/nginx/nginx.conf
+            - ./docker/nginx/nginx03/conf.d:/etc/nginx/conf.d
+            - ./front-end/dist:/usr/share/nginx/html
+
+
+    # 配置zookeeper 集群
+    
+    zoo1:
+        image: zookeeper:3.4.11
+        restart: always
+        hostname: zoo1
+        container_name: zookeeper_1
+        #domainname: 
+        ports:
+            - 2181:2181
+        volumes:
+            - ./docker/zk/zoo1/data:/data
+            - ./docker/zk/zoo1/datalog:/datalog
+        environment:
+            ZOO_MY_ID: 1
+            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+
+    zoo2:
+        image: zookeeper:3.4.11
+        restart: always
+        hostname: zoo2
+        container_name: zookeeper_2
+        ports:
+            - 2182:2181
+        volumes:
+            - ./docker/zk/zoo2/data:/data
+            - ./docker/zk/zoo2/datalog:/datalog
+        environment:
+            ZOO_MY_ID: 2
+            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+
+    zoo3:
+        image: zookeeper:3.4.11
+        restart: always
+        hostname: zoo3
+        container_name: zookeeper_3
+        ports:
+            - 2183:2181
+        volumes:
+            - ./docker/zk/zoo3/data:/data
+            - ./docker/zk/zoo3/datalog:/datalog
+        environment:
+            ZOO_MY_ID: 3
+            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+
+
+
+
