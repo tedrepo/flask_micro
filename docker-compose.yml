@@ -1,11 +1,20 @@
 version: '3'
 services: 
+    # 添加网关的配置
     gateway: 
         image: micro/gateway
         command: python app/app.py
         container_name: gateway
         ports:
             - "5001:5000"
+
+    # 添加 业务服务器的配置
+    
+    # 添加模型服务器的配置
+
+
+
+    # 添加 redis 的配置
     redis:
         image: redis
     redis_slave1:
@@ -14,6 +23,26 @@ services:
     redis_slave2:
         image: redis
         command: redis-server --slaveof redis 6379
+
+
+    # 添加mysql 的配置
+    mysql:
+        image: mysql:5.6
+
+        container_name: mysql #容器名称
+        environment: 
+            - MYSQL_ROOT_PASSWORD=123456
+            - MYSQL_DATABASE=dbname
+            - MYSQL_USER=testuser
+            - MYSQL_PASSWORD=password
+        ports: 
+            - "3307:3306"
+
+        volumes: 
+            - "$PWD/docker/mysql/mysql01/conf.d:/etc/mysql/conf.d"
+            - "$PWD/docker/mysql/mysql01/data:/var/lib/mysql"
+
+
 
 
     # 添加neginx

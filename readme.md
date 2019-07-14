@@ -1,3 +1,90 @@
+[toc]
+
+### redis 的配置
+
+1. 命令行的方式启动容器
+
+```shell
+docker run -d \
+  --name redis \
+  -p 6379:6379 \
+  --rm \
+  -v $PWD/docker/redis/data:/data \
+  redis redis-server --appendonly yes
+
+```
+
+2. 命令行的方式启动 redis客户端
+
+```shell
+docker run -it --link redis:redis-server --rm redis redis-cli -h redis-server
+```
+
+3. 使用 docker-compose 管理 mysql
+
+```shell
+redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - "$PWD/docker/redis/data:/data"
+    command: redis-server --appendonly yes
+```
+
+### mysql 的配置
+1. 本机的配置文件夹和数据文件夹
+
+```shell
+mkdir -p $PWD/docker/mysql/mysql01/conf.d/ 
+vim $PWD/docker/mysql/mysql01/conf.d/custom.cnf 
+
+```
+然后将宿主机上的 配置文件 和 数据目录 链接到 MySQL 容器，这样就算后续不小心删除了此容器，
+数据库中的数据文件还存在于本地，下次再重新启一个 MySQL 容器即可
+
+2. 使用命令行的方式启动容器
+
+```shell
+
+# docker run -d \
+  --name mysql \
+  -e MYSQL_ROOT_PASSWORD=123456 \
+  -e MYSQL_DATABASE=madblog \
+  -e MYSQL_USER=testuser \
+  -e MYSQL_PASSWORD=password \
+  -p 3306:3306 \
+  --rm \
+  -v $PWD/docker/mysql/conf.d:/etc/mysql/conf.d \
+  -v $PWD/docker/mysql/data:/var/lib/mysql \
+  mysql:5.6
+
+```
+
+命令行启动mysql客户端对数据库进行访问
+
+```shell
+docker run -it --link mysql:mysql-server --rm mysql:5.6 mysql -hmysql-server -utestuser -p
+```
+
+3. 使用 docker-compose 的方式管理 mysql的容器
+
+```shell
+
+  mysql:
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=madblog
+      - MYSQL_USER=testuser
+      - MYSQL_PASSWORD=password
+    ports:
+      - "3306:3306"
+    volumes:
+      - "$PWD/docker/mysql/conf.d:/etc/mysql/conf.d"
+      - "$PWD/docker/mysql/data:/var/lib/mysql"
+
+```
 
 
 
